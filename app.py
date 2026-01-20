@@ -384,7 +384,23 @@ with st.sidebar:
     # We apply multipliers to the SIGNALS, not raw data, for 'Weight' effect simulation 
     # OR we treat them as 'Shock' multipliers. Let's treat them as weight/impact multipliers.
     
-    final_df = calculate_ici_score(metrics_df, enrol_weight=sim_enrol, demo_weight=sim_demo, bio_weight=1.0)
+    # Use a copy to prevent mutation of the cached metrics_df across reruns
+    sim_df = metrics_df.copy()
+    
+    # --- UPGRADE: Apply Stress Multipliers directly to Signals ---
+    # This simulates increased LOAD/VOLATILITY, not just weight.
+    if sim_enrol != 1.0:
+        sim_df['Signal_Enrolment'] = sim_df['Signal_Enrolment'] * sim_enrol
+        # Re-clamp to max 1.0 or let it exceed to show extreme stress? 
+        # Let's saturate at 1.0 for the score calculation, or allow it to drive ICI higher.
+        # Allowing it to go > 1.0 will drive ICI higher, which is the desired "Stress Test" effect.
+    
+    if sim_demo != 1.0:
+        sim_df['Signal_Demograpic'] = sim_df['Signal_Demograpic'] * sim_demo
+
+    # Recalculate Score (Weights remain 1.0 if we just want uniform weighting on top of stressed signals)
+    # Or we can keep them as weights too. Let's keep weights default 1.0 since we applied stress to signals.
+    final_df = calculate_ici_score(sim_df, enrol_weight=1.0, demo_weight=1.0, bio_weight=1.0)
     
     # Apply Classification using latest ICI
     final_df['Category'] = final_df.apply(classify_district, axis=1)
@@ -530,10 +546,14 @@ if not latest_district_data.empty:
             # Forecast Logic
             forecast_df = compute_forecast(district_data)
             forecast_df['Type'] = 'Forecast'
-            district_data['Type'] = 'Historical'
+            
+            # Fix SettingWithCopyWarning: Work on a copy for visualization
+            viz_data = district_data.copy()
+            # Use .loc to be explicit
+            viz_data.loc[:, 'Type'] = 'Historical'
             
             # Combine for plotting
-            combined_plot = pd.concat([district_data[['date', 'ICI_Score', 'Type']], forecast_df], ignore_index=True)
+            combined_plot = pd.concat([viz_data[['date', 'ICI_Score', 'Type']], forecast_df], ignore_index=True)
             
             fig_fc = px.line(combined_plot, x='date', y='ICI_Score', color='Type', 
                              line_dash='Type', 
