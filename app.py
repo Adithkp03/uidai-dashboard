@@ -206,6 +206,22 @@ def compute_signals(df):
     df['Signal_Demograpic'] = normalize(df['Demo_Momentum'])
     df['Signal_Biometric'] = normalize(df['Bio_Vol'])
     df['Signal_Baseline_Deviation'] = normalize(df['Total_Deviation']) # UPGRADE
+
+    # --- LIFECYCLE AGE SIGNAL UPGRADE ---
+    
+    # 1. Lifecycle Imbalance Signal - Biometric Updates
+    # High biometric updates in 18+ is unexpected.
+    # Ratio = 18+ / (5-17 + 18+ + 1)
+    df['Adult_Biometric_Ratio'] = df['bio_age_17_'] / (df['bio_age_5_17'] + df['bio_age_17_'] + 1)
+    df['Signal_Lifecycle_Biometric_Imbalance'] = normalize(df['Adult_Biometric_Ratio'])
+    
+    # 2. Lifecycle Surge Signal - Early Enrolment
+    # Spikes in 0-5 indicate birth cohort effects.
+    # Ratio = 0-5 / (Total Enrol + 1)
+    df['Early_Enrolment_Ratio'] = df['age_0_5'] / (df['Total_Enrolment'] + 1)
+    # Track month-to-month change (Surge)
+    df['Enrol_Surge_Raw'] = df.groupby(['state', 'district'])['Early_Enrolment_Ratio'].transform(lambda x: x.diff())
+    df['Signal_Lifecycle_Enrolment_Surge'] = normalize(df['Enrol_Surge_Raw'].fillna(0))
     
     return df
 
@@ -558,6 +574,7 @@ with st.expander("🛡️ Ethics, Privacy & Governance"):
     2.  **Surveillance-Free:** The tooling is designed for **resource allocation** (staffing, kits), not policing or individual tracking.
     3.  **Explainable:** The ICI score is a simple weighted average of statistical variance. There are no "black box" neural networks making opaque decisions.
     4.  **Bias-Resistant:** By using **Percentile Ranking** instead of fixed thresholds, the system treats rural and urban districts fairly relative to their own network behavior.
+    5.  **Lifecycle-Aware (New):** Age data is used **only** at aggregated district level to understand service demand lifecycle. No inference about individuals or specific communities is made.
     """)
 
 st.divider()
@@ -637,6 +654,26 @@ with col_right:
         st.caption("Surge in address/mobile updates detected.")
     else:
         st.caption("Unusual biometric update activity patterns.")
+
+# --- LIFECYCLE AGE SIGNAL UPGRADE UI ---
+st.subheader("🧬 Lifecycle & Age-Based Service Signals")
+with st.expander("Expand to view Lifecycle Imbalance Analysis", expanded=True):
+    lc1, lc2 = st.columns(2)
+    
+    # Data prep
+    adult_bio_ratio = latest_district_data['Adult_Biometric_Ratio'].values[0]
+    early_enrol_surge = latest_district_data['Signal_Lifecycle_Enrolment_Surge'].values[0]
+    
+    with lc1:
+        st.markdown(metric_card("Adult Biometric Ratio", f"{adult_bio_ratio:.2%}", "Of Total Bio Updates"), unsafe_allow_html=True)
+        if adult_bio_ratio > 0.4: # Threshold e.g. 40%
+            st.warning("⚠️ High Adult Biometric Activity: Indicates increased re-verification or correction demand beyond standard growth updates.")
+        else:
+            st.success("✅ Clean Lifecycle Pattern: Biometrics driven mostly by child updates (5-17).")
+            
+    with lc2:
+        st.markdown(metric_card("Early Enrolment Surge", f"{early_enrol_surge:.2f}", "Norm. Signal"), unsafe_allow_html=True)
+        st.caption("Surge in 0-5yr enrolments relative to total. Indicates birth cohort registration drives.")
 
 # --- Data Table ---
 with st.expander("📂 View Classification Data"):
