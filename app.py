@@ -13,92 +13,111 @@ from sklearn.preprocessing import StandardScaler
 # --- Configuration ---
 st.set_page_config(
     page_title="UIDAI Operational Analytics",
-    page_icon="🇮🇳",
+    page_icon="favicon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- CSS Styling ---
+# --- UI Beautification ---
+# Load Material Icons Round from Google Fonts
+st.markdown('<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">', unsafe_allow_html=True)
+
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
+    /* Global */
     html, body, [class*="css"]  {
         font-family: 'Inter', sans-serif;
         background-color: #0E1117; 
         color: #E0E0E0;
     }
     
-    /* Main Background */
+    /* Main Background with subtle animated-like gradient feel */
     .stApp {
         background-color: #0E1117;
-        background-image: radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.1) 0%, transparent 20%),
-                          radial-gradient(circle at 90% 80%, rgba(213, 0, 249, 0.1) 0%, transparent 20%);
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 25%),
+            radial-gradient(circle at 90% 80%, rgba(213, 0, 249, 0.08) 0%, transparent 25%);
     }
 
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-        width: 10px;
-        background: #0E1117;
-    }
-    ::-webkit-scrollbar-thumb {
-        background: #333;
-        border-radius: 5px;
-    }
-
-    /* Card Style - Glassmorphism */
+    /* Card Style - Glassmorphism Enhanced */
     .glass-card {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     }
     .glass-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        border-color: rgba(0, 229, 255, 0.3);
     }
     
-    /* Metric Value Styling inside Custom Cards */
+    /* Typography */
     .metric-value {
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 700;
-        background: linear-gradient(90deg, #FFFFFF, #B0BEC5);
+        background: linear-gradient(120deg, #FFFFFF, #B0BEC5);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+        margin-bottom: 4px;
     }
     
     .metric-label {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #90A4AE;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        font-weight: 500;
-    }
-
-    .metric-delta {
-        font-size: 0.9rem;
-        margin-top: 5px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    /* Headers */
-    h1, h2, h3 {
-        color: #ffffff !important;
         font-weight: 600;
-        letter-spacing: -0.02em;
+        margin-bottom: 8px;
     }
     
-    /* Sidebar */
+    /* Custom Badge for Confidence */
+    .confidence-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-top: 8px;
+    }
+
+    /* Material Icons */
+    /* Font loaded via separate link tag to ensure reliability */
+    
+    .material-icons-round {
+        font-family: 'Material Icons Round';
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        display: inline-block;
+        line-height: 1;
+        text-transform: none;
+        letter-spacing: normal;
+        word-wrap: normal;
+        white-space: nowrap;
+        direction: ltr;
+        
+        /* Sharper rendering */
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: 'liga';
+        
+        vertical-align: middle;
+        margin-right: 8px;
+        color: inherit; /* Inherit text color */
+    }
+
+    /* Sidebar Styling */
     [data-testid="stSidebar"] {
-        background-color: #161B22;
+        background-color: #12141C;
         border-right: 1px solid rgba(255,255,255,0.05);
     }
     
@@ -116,6 +135,15 @@ st.markdown("""
         box-shadow: 0 0 15px rgba(0, 176, 255, 0.5);
     }
 
+    /* Titles */
+    h1, h2, h3 {
+        color: #ffffff !important;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+    }
+    h1 {
+        text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -178,7 +206,7 @@ def compute_signals(df):
     # Simply using the raw count scaled, or volatility. Let's use Volatility.
     df['Bio_Vol'] = df.groupby(['state', 'district'])['Total_Biometric'].transform(lambda x: x.rolling(window=3).std())
     
-    # --- UPGRADE: Baseline Deviation Signal ---
+    # --- Baseline Deviation Signal ---
     # Rationale: Captures abnormal behavior relative to historical median.
     # Compute median per district
     df['Enrol_Median'] = df.groupby(['state', 'district'])['Total_Enrolment'].transform(lambda x: x.rolling(window=12, min_periods=1).median())
@@ -207,13 +235,7 @@ def compute_signals(df):
     df['Signal_Biometric'] = normalize(df['Bio_Vol'])
     df['Signal_Baseline_Deviation'] = normalize(df['Total_Deviation']) # UPGRADE
 
-    # --- LIFECYCLE AGE SIGNAL UPGRADE ---
-    
-    # 1. Lifecycle Imbalance Signal - Biometric Updates
-    # High biometric updates in 18+ is unexpected.
-    # Ratio = 18+ / (5-17 + 18+ + 1)
-    df['Adult_Biometric_Ratio'] = df['bio_age_17_'] / (df['bio_age_5_17'] + df['bio_age_17_'] + 1)
-    df['Signal_Lifecycle_Biometric_Imbalance'] = normalize(df['Adult_Biometric_Ratio'])
+    # --- Lifecycle Age Signal ---
     
     # 2. Lifecycle Surge Signal - Early Enrolment
     # Spikes in 0-5 indicate birth cohort effects.
@@ -223,14 +245,15 @@ def compute_signals(df):
     df['Enrol_Surge_Raw'] = df.groupby(['state', 'district'])['Early_Enrolment_Ratio'].transform(lambda x: x.diff())
     df['Signal_Lifecycle_Enrolment_Surge'] = normalize(df['Enrol_Surge_Raw'].fillna(0))
     
-    # --- FINAL EXECUTIVE UPGRADE ---
-    
-    # 1. Operational Capacity Stress Proxy
+    # --- Operational Capacity Stress Proxy ---
     # Ratio = (Demographic + Biometric) / (Enrolment + 1)
     # Rationale: Updates take more time per unit than simple enrolment if infrastructure is enrolment-focused.
     df['Capacity_Stress_Ratio'] = (df['Total_Demographic'] + df['Total_Biometric']) / (df['Total_Enrolment'] + 1)
     df['Signal_Capacity_Stress'] = normalize(df['Capacity_Stress_Ratio'])
     
+    # --- Adult Biometric Ratio ---
+    df['Adult_Biometric_Ratio'] = df['bio_age_17_'] / (df['Total_Biometric'] + 1)
+
     return df
 
 def calculate_ici_score(df, enrol_weight=1.0, demo_weight=1.0, bio_weight=1.0):
@@ -262,11 +285,10 @@ def calculate_ici_score(df, enrol_weight=1.0, demo_weight=1.0, bio_weight=1.0):
     return df
 
 def classify_district(row):
-    """
-    Rule-based classification system using Percentile Ranks.
-    Fairer than hard thresholds as it adjusts to network-wide load.
-    """
-    # UPGRADE: Replaced hard thresholds with relative percentiles
+    # Rule-based classification system using Percentile Ranks.
+    # Fairer than hard thresholds as it adjusts to network-wide load.
+    
+    # Replaced hard thresholds with relative percentiles
     accel_pct = row['Accel_Rank_Pct']
     ici_pct = row['ICI_Rank_Pct']
     
@@ -303,7 +325,7 @@ def compute_ml_validation(df):
     iso = IsolationForest(contamination=0.05, random_state=42)
     df['ML_Anomaly_Score'] = iso.fit_predict(X) 
     # -1 is anomaly, 1 is normal. Map to readable.
-    df['ML_Is_Anomaly'] = df['ML_Anomaly_Score'].apply(lambda x: "⚠️ Anomalous" if x == -1 else "✅ Normal")
+    df['ML_Is_Anomaly'] = df['ML_Anomaly_Score'].apply(lambda x: "Anomalous" if x == -1 else "Normal")
     
     # 2. Clustering (KMeans) - Validating Typology
     # We use 3 clusters to see if they align with Stable/Transitional/High Churn
@@ -348,17 +370,21 @@ def get_recommendation(category):
     Prescriptive Recommendation Engine.
     """
     recs = {
-        "Emerging Risk": "🚨 Immediate Audit & Resource Allocation. Churn is spiking.",
-        "High Churn": "⚠️ Deploy Mobile Units & Camp Mode Updates. Load is critically high.",
-        "Transitional": "ℹ️ Monitor Closely. Optimize slot booking availability.",
-        "Stable": "✅ Standard Operations. Maintain baseline capacity."
+        "Emerging Risk": "Immediate Audit & Resource Allocation. Churn is spiking.",
+        "High Churn": "Deploy Mobile Units & Camp Mode Updates. Load is critically high.",
+        "Transitional": "Monitor Closely. Optimize slot booking availability.",
+        "Stable": "Standard Operations. Maintain baseline capacity."
     }
     return recs.get(category, "Analyze Further")
 
 # --- UI Layout ---
 
-st.title("🇮🇳 UIDAI Operational Decision Support System")
-st.markdown("### Identity Churn Index (ICI) Analytics")
+# --- UI Layout ---
+
+st.markdown("# <span class='material-icons-round'>dashboard</span> UIDAI Operational Decision Support System", unsafe_allow_html=True)
+# --- Executive Summary ---
+st.markdown("**This system helps UIDAI identify where identity infrastructure stress is emerging before service delivery failures occur.**")
+st.markdown("### <span class='material-icons-round'>analytics</span> Identity Churn Index (ICI) Analytics", unsafe_allow_html=True)
 
 # 1. Load & Process Data
 with st.spinner('Loading Data from MongoDB...'):
@@ -373,7 +399,7 @@ with st.spinner('Loading Data from MongoDB...'):
 
 # --- Simulation Sidebar ---
 with st.sidebar:
-    st.header("⚙️ Scenario Simulation")
+    st.markdown("## <span class='material-icons-round'>tune</span> Scenario Simulation", unsafe_allow_html=True)
     st.info("Simulate operational stress by adjusting signal weights or multipliers.")
     
     # Simulation Sliders
@@ -404,16 +430,16 @@ with st.sidebar:
     
     # Apply Classification using latest ICI
     final_df['Category'] = final_df.apply(classify_district, axis=1)
-    
-    # --- UPGRADE: Run ML Layer ---
-    final_df = compute_ml_validation(final_df)
 
-    # --- FINAL EXECUTIVE UPGRADE ---
+    # --- UPGRADE: Run ML Validation to get ML_Is_Anomaly ---
+    final_df = compute_ml_validation(final_df)
     
+    # --- Intervention Priority Score ---
+    # Composite Score = (ICI * 0.6) + (Accel * 0.3) + (Anomaly * 0.1)
     # 2. Intervention Priority Score
     # Composite Score = (ICI * 0.6) + (Accel * 0.3) + (Anomaly * 0.1)
     def calc_priority(row):
-        anomaly_score = 0.1 if row['ML_Is_Anomaly'] == "⚠️ Anomalous" else 0.0
+        anomaly_score = 0.1 if row['ML_Is_Anomaly'] == "Anomalous" else 0.0
         # Handle NaN in acceleration
         accel = row['ICI_Acceleration'] if not pd.isna(row['ICI_Acceleration']) else 0.0
         return (row['ICI_Score'] * 0.6) + (abs(accel) * 0.3) + anomaly_score
@@ -426,8 +452,7 @@ with st.sidebar:
 
     st.divider()
     
-    # Filters
-    st.header("📍 Region Filtering")
+    st.markdown("## <span class='material-icons-round'>place</span> Region Filtering", unsafe_allow_html=True)
     try:
         states = sorted(final_df['state'].unique())
         selected_state = st.selectbox("Select State", states)
@@ -501,11 +526,38 @@ if not latest_district_data.empty:
         elif "Stable" in current_category: cat_color = "#00E676"
         
         # Custom card for text value
+        # Custom card for text value
+        # --- Confidence Badge ---
+        # Logic: 
+        # High Confidence if Risk is High AND Anomaly is True AND Stress > 0.6
+        # Else if 2 conditions met -> Medium
+        # Else -> Caution
+        
+        cap_stress_val = latest_district_data['Signal_Capacity_Stress'].values[0]
+        
+        confidence_level = "Consider with Caution" # Default
+        confidence_color = "#FFA726"
+        
+        risk_flag = ("High" in current_category or "Emerging" in current_category)
+        anomaly_flag = (is_anomaly == "Anomalous")
+        stress_flag = (cap_stress_val > 0.6)
+        
+        matches = sum([risk_flag, anomaly_flag, stress_flag])
+        
+        if matches == 3:
+            confidence_level = "High Confidence"
+            confidence_color = "#00E676" # Green
+        elif matches == 2:
+            confidence_level = "Medium Confidence"
+            confidence_color = "#29B6F6" # Blue
+            
         st.markdown(f"""
         <div class="glass-card">
             <div class="metric-label">Risk Category</div>
             <div class="metric-value" style="color: {cat_color}; background: none; -webkit-text-fill-color: {cat_color};">{current_category}</div>
-            <div class="metric-delta">Model Assessment</div>
+            <div class="confidence-badge" style="background-color: rgba(255,255,255,0.1); color: {confidence_color}; border: 1px solid {confidence_color};">
+                {confidence_level}
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -522,8 +574,8 @@ if not latest_district_data.empty:
     else:
         st.success(f"**Status**: {recommendation}")
 
-    # --- UPGRADE: ML Validation Section ---
-    st.markdown("### 🤖 AI/ML Validation Layer (Supporting Analysis)")
+    # --- ML Validation Section ---
+    st.markdown("### <span class='material-icons-round'>psychology</span> AI/ML Validation Layer (Supporting Analysis)", unsafe_allow_html=True)
     with st.expander("Expand to view Unsupervised ML & Forecasts", expanded=True):
         m1, m2 = st.columns([1, 2])
         
@@ -531,7 +583,7 @@ if not latest_district_data.empty:
             st.info(f"**ML Validation Status**: {is_anomaly}")
             st.caption("Unsupervised Isolation Forest (Statistically unusual behavior check).")
             
-            if is_anomaly == "⚠️ Anomalous":
+            if is_anomaly == "Anomalous":
                 st.write("This district exhibits data patterns significantly deviating from the national distribution.")
             else:
                 st.write("District behavior is statistically consistent with national norms.")
@@ -541,7 +593,7 @@ if not latest_district_data.empty:
             st.caption("KMeans Grouping. Validates if rule-based category aligns with data clusters.")
 
         with m2:
-            st.subheader("🔮 Short-Horizon Trend Forecast")
+            st.markdown("### <span class='material-icons-round'>trending_up</span> Short-Horizon Trend Forecast", unsafe_allow_html=True)
             
             # Forecast Logic
             forecast_df = compute_forecast(district_data)
@@ -559,12 +611,12 @@ if not latest_district_data.empty:
                              line_dash='Type', 
                              color_discrete_map={"Historical": "blue", "Forecast": "orange"},
                              title="ICI Trend + 3 Month Forecast")
-            st.plotly_chart(fig_fc, use_container_width=True)
+            st.plotly_chart(fig_fc, width="stretch")
             st.caption("Indicative trend projection based on recent acceleration. Not a guarantee.")
 
-# --- UPGRADE: Model Validation & Sanity Check ---
+# --- Model Validation & Sanity Check ---
 st.divider()
-st.subheader("🔍 Model Sanity Check & Validation")
+st.markdown("### <span class='material-icons-round'>fact_check</span> Model Sanity Check & Validation", unsafe_allow_html=True)
 
 with st.expander("See automatic validation of district classifications", expanded=False):
     st.markdown("Automated sampling of classified districts to verify logic consistency.")
@@ -598,8 +650,8 @@ with st.expander("See automatic validation of district classifications", expande
     except Exception as e:
         st.write("Insufficient data for full validation.")
 
-# --- UPGRADE: Strategic Comparison ---
-st.subheader("💡 Why Identity Churn Matters More Than Raw Volume")
+# --- Strategic Comparison ---
+st.markdown("### <span class='material-icons-round'>lightbulb</span> Why Identity Churn Matters More Than Raw Volume", unsafe_allow_html=True)
 st.markdown("""
 | Feature | Traditional Volume Dashboard | **Identity Churn Index (ICI)** |
 | :--- | :--- | :--- |
@@ -609,8 +661,8 @@ st.markdown("""
 | **Action** | "Hire more staff." | "**Deploy targeted interventions (Mobile Units).**" |
 """)
 
-# --- UPGRADE: Ethics & Governance ---
-with st.expander("🛡️ Ethics, Privacy & Governance"):
+# --- Ethics & Governance ---
+with st.expander("Ethics, Privacy & Governance"):
     st.info("""
     **Responsible AI & Data Usage Statement**
     
@@ -621,6 +673,15 @@ with st.expander("🛡️ Ethics, Privacy & Governance"):
     5.  **Lifecycle-Aware (New):** Age data is used **only** at aggregated district level to understand service demand lifecycle. No inference about individuals or specific communities is made.
     """)
 
+# --- Limitations ---
+with st.expander("Assumptions & Limitations"):
+    st.markdown("""
+    *   **Data Aggregation**: Uses aggregated monthly district-level data. Does not model daily or center-level congestion.
+    *   **Forecasting**: Forecasts are indicative, based on recent momentum, and are not deterministic predictions of future events.
+    *   **Decision Support**: This tool is intended to support human decision-making, not to be an automated decision system.
+    *   **Proxy Signals**: "Capacity Stress" is a derived proxy based on update ratios and assumes standard enrolment center configurations.
+    """)
+
 st.divider()
 
 # --- Visualizations ---
@@ -628,7 +689,7 @@ st.divider()
 col_left, col_right = st.columns([2, 1])
 
 with col_left:
-    st.subheader(f"📉 ICI Trend: {selected_district}")
+    st.markdown(f"### <span class='material-icons-round'>show_chart</span> ICI Trend: {selected_district}", unsafe_allow_html=True)
     
     # Line Chart
     fig_line = px.line(district_data, x="date", y="ICI_Score", 
@@ -644,9 +705,9 @@ with col_left:
     # We calculate the 80th percentile score from the WHOLE dataset for context
     threshold_val = final_df['ICI_Score'].quantile(0.8)
     fig_line.add_hline(y=threshold_val, line_dash="dash", line_color="#FF5252", annotation_text="80th Pctl (High Churn)")
-    st.plotly_chart(fig_line, use_container_width=True)
+    st.plotly_chart(fig_line, width="stretch")
     
-    st.subheader("📊 Signal Decomposition")
+    st.markdown("### <span class='material-icons-round'>bar_chart</span> Signal Decomposition", unsafe_allow_html=True)
     # Area Chart for Signals
     fig_area = px.area(district_data, x="date", y=["Signal_Enrolment", "Signal_Demograpic", "Signal_Biometric", "Signal_Baseline_Deviation"],
                        title="Contribution of Signals to ICI")
@@ -654,10 +715,10 @@ with col_left:
                            paper_bgcolor='rgba(0,0,0,0)', 
                            plot_bgcolor='rgba(0,0,0,0)',
                            font={'family': 'Inter'})
-    st.plotly_chart(fig_area, use_container_width=True)
+    st.plotly_chart(fig_area, width="stretch")
 
 with col_right:
-    st.subheader("🏆 Top High-Churn Districts (State)")
+    st.markdown("### <span class='material-icons-round'>emoji_events</span> Top High-Churn Districts (State)", unsafe_allow_html=True)
     
     # Get latest data for all districts in state
     latest_state_data = state_data[state_data['date'] == latest_date].sort_values(by="ICI_Score", ascending=False).head(10)
@@ -676,10 +737,10 @@ with col_right:
                           paper_bgcolor='rgba(0,0,0,0)',
                           plot_bgcolor='rgba(0,0,0,0)',
                           font={'family': 'Inter'})
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width="stretch")
 
     # Explainability Panel
-    st.markdown("### ℹ️ District Insight")
+    st.markdown("### <span class='material-icons-round'>info</span> District Insight", unsafe_allow_html=True)
     st.write(f"**{selected_district}** is classified as **{current_category}**.")
     st.write("Prominent Churn Drivers:")
     
@@ -699,15 +760,15 @@ with col_right:
     else:
         st.caption("Unusual biometric update activity patterns.")
         
-    # --- FINAL EXECUTIVE UPGRADE UI ---
+    # --- Executive Upgrade UI ---
     st.markdown("---")
     # Display Capacity Stress Signal
     cap_stress = latest_district_data['Signal_Capacity_Stress'].values[0]
     st.markdown(f"**Operational Capacity Stress**: {cap_stress:.2f}")
     st.caption("Higher values indicate update demand rising faster than baseline enrolment activity, suggesting service capacity pressure.")
 
-# --- LIFECYCLE AGE SIGNAL UPGRADE UI ---
-st.subheader("🧬 Lifecycle & Age-Based Service Signals")
+# --- Lifecycle Age Signal ---
+st.markdown("### <span class='material-icons-round'>timelapse</span> Lifecycle & Age-Based Service Signals", unsafe_allow_html=True)
 with st.expander("Expand to view Lifecycle Imbalance Analysis", expanded=True):
     lc1, lc2 = st.columns(2)
     
@@ -718,32 +779,32 @@ with st.expander("Expand to view Lifecycle Imbalance Analysis", expanded=True):
     with lc1:
         st.markdown(metric_card("Adult Biometric Ratio", f"{adult_bio_ratio:.2%}", "Of Total Bio Updates"), unsafe_allow_html=True)
         if adult_bio_ratio > 0.4: # Threshold e.g. 40%
-            st.warning("⚠️ High Adult Biometric Activity: Indicates increased re-verification or correction demand beyond standard growth updates.")
+            st.warning("High Adult Biometric Activity: Indicates increased re-verification or correction demand beyond standard growth updates.")
         else:
-            st.success("✅ Clean Lifecycle Pattern: Biometrics driven mostly by child updates (5-17).")
+            st.success("Clean Lifecycle Pattern: Biometrics driven mostly by child updates (5-17).")
             
     with lc2:
         st.markdown(metric_card("Early Enrolment Surge", f"{early_enrol_surge:.2f}", "Norm. Signal"), unsafe_allow_html=True)
         st.caption("Surge in 0-5yr enrolments relative to total. Indicates birth cohort registration drives.")
 
 # --- Data Table ---
-with st.expander("📂 View Classification Data"):
-    st.dataframe(latest_state_data[['district', 'ICI_Score', 'Category', 'Total_Enrolment', 'Total_Demographic', 'Total_Biometric']], use_container_width=True)
+with st.expander("View Classification Data"):
+    st.dataframe(latest_state_data[['district', 'ICI_Score', 'Category', 'Total_Enrolment', 'Total_Demographic', 'Total_Biometric']], width=700)
 
-# --- FINAL EXECUTIVE UPGRADE: Intervention Table ---
-st.subheader("🚨 Priority Intervention List (Executive View)")
+# --- Intervention Table ---
+st.markdown("### <span class='material-icons-round'>warning</span> Priority Intervention List (Executive View)", unsafe_allow_html=True)
 st.caption("Top districts requiring immediate resource allocation based on Composite Intervention Score.")
 # Get top 5 from state
 top_intervention = state_data[state_data['date'] == latest_date].sort_values(by="Intervention_Priority", ascending=False).head(5)
 st.table(top_intervention[['district', 'Category', 'ICI_Score', 'Intervention_Priority']])
 
-# --- FINAL EXECUTIVE UPGRADE: Narrative ---
+# --- Narrative ---
 st.markdown("""
-### 📝 Policy Simulation Example
+### <span class='material-icons-round'>description</span> Policy Simulation Example
 > "In the current simulation, increasing demographic update load by 20% causes multiple transitional districts to shift into high-churn status within two months, indicating the need for early deployment of mobile update units."
 
-### 🌏 Scalability & Reusability
+### <span class='material-icons-round'>public</span> Scalability & Reusability
 *   **Dataset Agnostic:** The math (Percentile Ranks, Isolation Forest) works for **PDS Rations, Health IDs, or Pension Disbursal** systems.
 *   **Plug-and-Play:** Can be integrated as a microservice into existing UIDAI Command & Control Centers.
 *   **Cloud Native:** Tested on MongoDB Atlas + Streamlit Community Cloud for instant scalability.
-""")
+""", unsafe_allow_html=True)
