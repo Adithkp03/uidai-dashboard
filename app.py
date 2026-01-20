@@ -21,31 +21,101 @@ st.set_page_config(
 # --- CSS Styling ---
 st.markdown("""
 <style>
-    .main {
-        background-color: #0e1117;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+    html, body, [class*="css"]  {
+        font-family: 'Inter', sans-serif;
+        background-color: #0E1117; 
+        color: #E0E0E0;
     }
-    div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        color: #000000 !important;
+    
+    /* Main Background */
+    .stApp {
+        background-color: #0E1117;
+        background-image: radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.1) 0%, transparent 20%),
+                          radial-gradient(circle at 90% 80%, rgba(213, 0, 249, 0.1) 0%, transparent 20%);
     }
-    div[data-testid="stMetric"] label {
-        color: #31333F !important;
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        background: #0E1117;
     }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: #000000 !important;
+    ::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 5px;
     }
-    div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
-        color: #31333F !important;
+
+    /* Card Style - Glassmorphism */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    div[data-testid="stMetric"] [data-testid="stMetricDelta"] {
-        color: #555555 !important;
+    .glass-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
     }
+    
+    /* Metric Value Styling inside Custom Cards */
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #FFFFFF, #B0BEC5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    .metric-label {
+        font-size: 0.9rem;
+        color: #90A4AE;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+
+    .metric-delta {
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Headers */
     h1, h2, h3 {
-        color: #f0f2f6;
+        color: #ffffff !important;
+        font-weight: 600;
+        letter-spacing: -0.02em;
     }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #161B22;
+        border-right: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    /* Buttons */
+    .stButton > button {
+        background: linear-gradient(90deg, #2979FF, #00B0FF);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    .stButton > button:hover {
+        box-shadow: 0 0 15px rgba(0, 176, 255, 0.5);
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -335,16 +405,58 @@ if not latest_district_data.empty:
     is_anomaly = latest_district_data['ML_Is_Anomaly'].values[0]
     ml_cluster = latest_district_data['ML_Cluster'].values[0]
     
+    # Custom HTML Metric Cards
+    def metric_card(label, value, delta=None, color_class="neutral"):
+        delta_html = ""
+        if delta:
+            try:
+                d_val = float(delta)
+                if d_val > 0:
+                   arrow = "↑"
+                   c_code = "#00E676" # Green
+                elif d_val < 0:
+                   arrow = "↓"
+                   c_code = "#FF5252" # Red 
+                else: 
+                   arrow = "-"
+                   c_code = "#B0BEC5" # Grey
+                
+                delta_html = f'<div class="metric-delta" style="color: {c_code};">{arrow} {abs(d_val):.2f}</div>'
+            except:
+                delta_html = f'<div class="metric-delta" style="color: #B0BEC5;">{delta}</div>' # Text delta
+
+        return f"""
+        <div class="glass-card">
+            <div class="metric-label">{label}</div>
+            <div class="metric-value">{value}</div>
+            {delta_html}
+        </div>
+        """
+
     # Top Row: KPIs
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("Identity Churn Index (ICI)", f"{current_ici:.2f}", delta=f"{latest_district_data['ICI_Acceleration'].values[0]:.2f}")
+        st.markdown(metric_card("Identity Churn Index", f"{current_ici:.2f}", latest_district_data['ICI_Acceleration'].values[0]), unsafe_allow_html=True)
     with col2:
-        st.metric("Risk Category", current_category)
+        # Style Risk Category text based on severity
+        cat_color = "#B0BEC5"
+        if "High Churn" in current_category: cat_color = "#FF9800"
+        elif "Emerging" in current_category: cat_color = "#FF5252" 
+        elif "Stable" in current_category: cat_color = "#00E676"
+        
+        # Custom card for text value
+        st.markdown(f"""
+        <div class="glass-card">
+            <div class="metric-label">Risk Category</div>
+            <div class="metric-value" style="color: {cat_color}; background: none; -webkit-text-fill-color: {cat_color};">{current_category}</div>
+            <div class="metric-delta">Model Assessment</div>
+        </div>
+        """, unsafe_allow_html=True)
+
     with col3:
-        st.metric("Total Enrolments (Last Month)", int(latest_district_data['Total_Enrolment'].values[0]))
+        st.markdown(metric_card("Total Enrolments (Last Month)", f"{int(latest_district_data['Total_Enrolment'].values[0]):,}", "Volume"), unsafe_allow_html=True)
     with col4:
-        st.metric("Total Updates (Last Month)", int(latest_district_data['Total_Demographic'].values[0] + latest_district_data['Total_Biometric'].values[0]))
+        st.markdown(metric_card("Total Updates", f"{int(latest_district_data['Total_Demographic'].values[0] + latest_district_data['Total_Biometric'].values[0]):,}", "Activity"), unsafe_allow_html=True)
 
     # Recommendation Banner
     if current_ici > 0.6 or current_category == "Emerging Risk":
@@ -461,16 +573,26 @@ with col_left:
     fig_line = px.line(district_data, x="date", y="ICI_Score", 
                        title="Identity Churn Index Over Time",
                        markers=True)
+    # Styles
+    fig_line.update_layout(template="plotly_dark", 
+                           paper_bgcolor='rgba(0,0,0,0)', 
+                           plot_bgcolor='rgba(0,0,0,0)',
+                           font={'family': 'Inter'})
+                           
     # UPGRADE: Add line for 80th percentile threshold context (approximate from current data)
     # We calculate the 80th percentile score from the WHOLE dataset for context
     threshold_val = final_df['ICI_Score'].quantile(0.8)
-    fig_line.add_hline(y=threshold_val, line_dash="dash", line_color="red", annotation_text="80th Pctl (High Churn)")
+    fig_line.add_hline(y=threshold_val, line_dash="dash", line_color="#FF5252", annotation_text="80th Pctl (High Churn)")
     st.plotly_chart(fig_line, use_container_width=True)
     
     st.subheader("📊 Signal Decomposition")
     # Area Chart for Signals
     fig_area = px.area(district_data, x="date", y=["Signal_Enrolment", "Signal_Demograpic", "Signal_Biometric", "Signal_Baseline_Deviation"],
                        title="Contribution of Signals to ICI")
+    fig_area.update_layout(template="plotly_dark", 
+                           paper_bgcolor='rgba(0,0,0,0)', 
+                           plot_bgcolor='rgba(0,0,0,0)',
+                           font={'family': 'Inter'})
     st.plotly_chart(fig_area, use_container_width=True)
 
 with col_right:
@@ -482,13 +604,17 @@ with col_right:
     fig_bar = px.bar(latest_state_data, x="ICI_Score", y="district", orientation='h',
                      color="Category",
                      color_discrete_map={
-                         "Emerging Risk": "#d62728", # Red
-                         "High Churn": "#ff7f0e",    # Orange
-                         "Transitional": "#bcbd22",  # Yellowish
-                         "Stable": "#2ca02c"         # Green
+                         "Emerging Risk": "#FF5252", # Red
+                         "High Churn": "#FFAB40",    # Orange
+                         "Transitional": "#FFEA00",  # Yellowish
+                         "Stable": "#69F0AE"         # Green
                      },
                      title="Top 10 Districts by ICI")
-    fig_bar.update_layout(yaxis={'categoryorder':'total ascending'})
+    fig_bar.update_layout(yaxis={'categoryorder':'total ascending'}, 
+                          template="plotly_dark",
+                          paper_bgcolor='rgba(0,0,0,0)',
+                          plot_bgcolor='rgba(0,0,0,0)',
+                          font={'family': 'Inter'})
     st.plotly_chart(fig_bar, use_container_width=True)
 
     # Explainability Panel
